@@ -2,6 +2,17 @@
 REPO = lowess/drone-helm-semver
 VERSION ?= latest
 
+TEST_VERSION = v1.0.0
+
+test:
+	docker run -i \
+	   -w /gitops \
+           -v $(PWD)/tests:/gitops \
+           -v $(PWD)/plugin:/opt/drone/plugin \
+           -e PLUGIN_RELEASE=myrelease \
+           -e PLUGIN_VERSION=$(TEST_VERSION) \
+           lowess/drone-helm-semver
+
 plugin:
 	@echo "Building Drone plugin (export VERSION=<version> if needed)"
 	docker build . -t $(REPO):$(VERSION)
