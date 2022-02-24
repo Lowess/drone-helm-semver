@@ -1,4 +1,4 @@
-#!/usr/bin/env sh
+#!/usr/bin/env bash
 
 set -e
 
@@ -13,26 +13,32 @@ echo "🔆 Running helm-semver on release: ${RELEASE}"
 echo "🏷️ Bumping ${VERSION_PATH} to ${VERSION}"
 
 # Constants
-RELEASE_VALUES_FILE=$(find ${FOLDER} -name "*${RELEASE}.yaml")
 RELEASE_NEW_VALUES="/tmp/${RELEASE}.yaml"
 RELEASE_DIFF_VALUES="${RELEASE_NEW_VALUES}.diff"
 RELEASE_DEST_VALUES="/tmp/${RELEASE}.yaml.new"
 
+
+RELEASE_VALUES_FILES=()
+while IFS=  read -r -d $'\0'; do
+    RELEASE_VALUES_FILES+=("$REPLY")
+done < <(find ${FOLDER} -name "*${RELEASE}.yaml" -print0)
+
 # Input validation
 
-if [ -z "${RELEASE_VALUES_FILE}" ]; then
+if [ -z "${RELEASE_VALUES_FILES}" ]; then
   echo "|- ⁉️ Could not find value files matching \"${RELEASE}\" in \"${FOLDER}\", aborting"
   exit 1
 fi
-if [ $(echo "${RELEASE_VALUES_FILE}" | wc -l) -eq 1 ]; then
-  echo "|- ✔️ Found value file matching \"${RELEASE}\" in \"${FOLDER}\": ${RELEASE_VALUES_FILE}"
+if [ $(echo "${RELEASE_VALUES_FILES}" | wc -l) -eq 1 ]; then
+  echo "|- ✔️ Found value file matching \"${RELEASE}\" in \"${FOLDER}\": ${RELEASE_VALUES_FILES}"
 else
   if [ "${ALLOW_MULTIPLE}" = "false" ]; then
     echo "|- ⁉️ Found multiple value files matching \"${RELEASE}\" in \"${FOLDER}\" and allow multiple is currently false, aborting"
-    echo "${RELEASE_VALUES_FILE}"
+    echo "${RELEASE_VALUES_FILES}"
     exit 2
   else
     echo "|- ✔️ Found  multiple files matching \"${RELEASE}\" in \"${FOLDER}\", will process them in a loop"
+    echo "${RELEASE_VALUES_FILES}"
   fi
 fi
 
@@ -42,7 +48,10 @@ print_version() {
 }
 
 
-for RELEASE_VALUES_FILE in "${FOLDER}"/**/*"${RELEASE}.yaml"; do
+for RELEASE_VALUES_FILE in "${RELEASE_VALUES_FILES[@]}"; do
+
+  echo "|- ✏️ Processing ${RELEASE_VALUES_FILE}"
+
   # Step 1 - Generate new values file
   yq e "${VERSION_PATH} = \"${VERSION}\"" ${RELEASE_VALUES_FILE} > ${RELEASE_NEW_VALUES}
 
@@ -56,4 +65,5 @@ for RELEASE_VALUES_FILE in "${FOLDER}"/**/*"${RELEASE}.yaml"; do
 
   # Step 4 - Override the current values file with the newly generated file
   cp ${RELEASE_DEST_VALUES} ${RELEASE_VALUES_FILE}
+
 done
