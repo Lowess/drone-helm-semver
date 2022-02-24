@@ -7,7 +7,7 @@ A [Drone plugin](https://readme.drone.io/plugins/overview/) to help deal with He
 
 # :notebook: Usage
 
-* Bump up the `.image.tag` stored in a values file named `*verity-go-api--production.yaml` located in the `gitops` folder
+* Bump up the `.image.tag` stored in a values file named `*myrelease.yaml` located in the `gitops` folder
 
 ```yaml
 ---
@@ -19,13 +19,13 @@ steps:
   - name: gitops_clone
     image: alpine/git
     commands:
-      - git clone https://bitbucket.org/gumgum/verity-onprem-ops/ gitops
+      - git clone https://github.com/<yourcompany>/<gitops-repo> gitops
 
   - name: gitops_autosemver
     image: lowess/drone-helm-semver
     settings:
         folder: gitops
-        release: verity-go-api--production
+        release: myrelease
         version_path: .image.tag
         version: ${DRONE_TAG}
 
@@ -40,20 +40,20 @@ steps:
       path: gitops
       commit_message: '[GITOPS] :robot: ${DRONE_COMMIT_MESSAGE/\\n/}'
       author_name: 'GitOps'
-      author_email: 'noreply@gumgum.com'
+      author_email: 'noreply@<mycompany>.com'
 ```
 
 ---
 
 # :gear: Parameter Reference
 
-| Parameter      | Description                                                                           | Example                    |
-| -------------- | ------------------------------------------------------------------------------------- | -------------------------- |
-| `folder`       | The Gitops folder where the `find` command will be executed                           | `gitops`                   |
-| `release`      | The name the file holding `values.yaml` for the release                               | `mychart--production.yaml` |
-| `version`      | The Docker image version to set in the `values.yaml` of the realease                  | `v1.0.0`                   |
-| `version_path` | The [JMESPath](https://jmespath.org/contents.html) expression to the Docker image tag | `.image.tag`               |
-
+| Parameter        | Description                                                                                          | Example                    |
+| ---------------- | ---------------------------------------------------------------------------------------------------- | -------------------------- |
+| `folder`         | The Gitops folder where the `find` command will be executed                                          | `gitops`                   |
+| `release`        | The name the file holding `values.yaml` for the release                                              | `mychart--production.yaml` |
+| `version`        | The Docker image version to set in the `values.yaml` of the realease                                 | `v1.0.0`                   |
+| `version_path`   | The [JMESPath](https://jmespath.org/contents.html) expression to the Docker image tag                | `.image.tag`               |
+| `allow_multiple` | If true and multiple releases are matched with the `find` command it will process them all in a loop | `false`                    |
 ---
 
 # :beginner: Development
@@ -61,10 +61,15 @@ steps:
 * Run the plugin directly from a built Docker image:
 
 ```bash
+# Adjust the following accordingly
+export GITOPS_REPO="~/workspace/<my-gitops-repo-root>"
+export GITOPS_RELEASE="myrelease"
+export GITOPS_VERSION="v1.0.0"
+
 docker run -i \
-           -v /Users/florian/Workspace/verity-onprem-ops:/gitops \
+           -v ${GITOPS_REPO}:/gitops \
            -v $(pwd)/plugin:/opt/drone/plugin \
-           -e PLUGIN_RELEASE=verity-go-api--production \
-           -e PLUGIN_VERSION=snapshot \
+           -e PLUGIN_RELEASE=${GITOPS_RELEASE} \
+           -e PLUGIN_VERSION=${GITOPS_VERSION} \
            lowess/drone-helm-semver
 ```
