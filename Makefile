@@ -3,13 +3,16 @@ REPO = lowess/drone-helm-semver
 VERSION ?= latest
 
 TEST_VERSION = v1.0.0
+TEST_MULTIPLE = true
 
 test:
 	docker run -i \
 	   -w /gitops \
+	   -v $(PWD)/script.sh:/bin/script.sh \
            -v $(PWD)/tests:/gitops \
            -v $(PWD)/plugin:/opt/drone/plugin \
            -e PLUGIN_RELEASE=myrelease \
+	   -e PLUGIN_ALLOW_MULTIPLE=$(TEST_MULTIPLE) \
            -e PLUGIN_VERSION=$(TEST_VERSION) \
            lowess/drone-helm-semver
 
