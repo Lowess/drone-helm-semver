@@ -8,6 +8,26 @@ RELEASE="${PLUGIN_RELEASE}"
 VERSION="${PLUGIN_VERSION}"
 VERSION_PATH="${PLUGIN_VERSION_PATH:-.image.tag}"
 ALLOW_MULTIPLE="${PLUGIN_ALLOW_MULTIPLE:-false}"
+AUTO_SUFFIX_RELEASE="${PLUGIN_AUTO_SUFFIX_RELEASE:-false}"
+AUTO_SUFFIX_RELEASE_SEPARATOR="${PLUGIN_AUTO_SUFFIX_RELEASE_SEPARATOR:---}"
+
+# Let the plugin compute the final release name based on DRONE_BRANCH or DRONE_TAG
+if [ "${AUTO_SUFFIX_RELEASE}" = "true" ]; then
+  echo "🔮 The plugin will attempt to compute the final release name for you based on Drone environments..."
+
+  if [ -n "${DRONE_TAG}" ]; then
+    RELEASE="${RELEASE}${AUTO_SUFFIX_RELEASE_SEPARATOR}production"
+  else
+    case "${DRONE_BRANCH}" in
+      master|main)
+        RELEASE="${RELEASE}${AUTO_SUFFIX_RELEASE_SEPARATOR}staging"
+        ;;
+      *)
+        echo "|- ⚠️ Couldn't auto-suffix release based on git branch or tag, \"${RELEASE}\" remains untouched"
+        ;;
+    esac
+  fi
+fi
 
 echo "🔆 Running helm-semver on release: ${RELEASE}"
 echo "🏷️ Bumping ${VERSION_PATH} to ${VERSION}"

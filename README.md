@@ -47,13 +47,16 @@ steps:
 
 # :gear: Parameter Reference
 
-| Parameter        | Description                                                                                          | Example                    |
-| ---------------- | ---------------------------------------------------------------------------------------------------- | -------------------------- |
-| `folder`         | The Gitops folder where the `find` command will be executed                                          | `gitops`                   |
-| `release`        | The name the file holding `values.yaml` for the release                                              | `mychart--production.yaml` |
-| `version`        | The Docker image version to set in the `values.yaml` of the realease                                 | `v1.0.0`                   |
-| `version_path`   | The [JMESPath](https://jmespath.org/contents.html) expression to the Docker image tag                | `.image.tag`               |
-| `allow_multiple` | If true and multiple releases are matched with the `find` command it will process them all in a loop | `false`                    |
+| Parameter                       | Description                                                                                                                                                                 | Example                    |
+| ------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------- |
+| `folder`                        | The Gitops folder where the `find` command will be executed                                                                                                                 | `gitops`                   |
+| `release`                       | The name the file holding `values.yaml` for the release                                                                                                                     | `mychart--production.yaml` |
+| `version`                       | The Docker image version to set in the `values.yaml` of the realease                                                                                                        | `v1.0.0`                   |
+| `version_path`                  | The [JMESPath](https://jmespath.org/contents.html) expression to the Docker image tag                                                                                       | `.image.tag`               |
+| `allow_multiple`                | If true and multiple releases are matched with the `find` command it will process them all in a loop                                                                        | `false`                    |
+| `auto_suffix_release`           | If true the plugin suffixes `release` with `production` when `DRONE_TAG` is present or uses `staging` when `DRONE_BRANCH` is `master` or `main`                             | `false`                    |
+| `auto_suffix_release_separator` | Used to compute the final release name when `auto_suffix_release` is `true` the release name will be computed this way `<release><auto_suffix_release_separator><production | staging>`                  | `--` |
+
 ---
 
 # :beginner: Development
